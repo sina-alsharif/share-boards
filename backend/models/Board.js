@@ -7,6 +7,12 @@ const boardSchema = new mongoose.Schema({
     },
     users: {
         type: Array
+    },
+    admins: {
+        type: Array
+    },
+    text: {
+        type: String
     }
 });
 
