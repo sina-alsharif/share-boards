@@ -2,18 +2,11 @@ const router = require('express').Router();
 const verify = require('./verify');
 const mongoose = require('mongoose');
 const Board = require('../models/Board');
+const User = require('../models/User');
 
-router.post('/create', verify, (req, res) => {
-    const newBoard = new Board({
-        name: req.body.name,
-        users: req.body.users,
-        admins: req.header('auth-token')
-    });
-    newBoard.save((err) => {
-        if(err) return res.status(400);
-        return res.send(newBoard);
-    });
-});
+//ADD VERIFICATION AFTER FINISHING ALL CRUD OPERATIONS
+//ADD Admin verification for user and board controls
+//Retrieve all boards
 
 router.get('/all', (req, res) => {
     Board.find((err, data) => {
@@ -22,6 +15,8 @@ router.get('/all', (req, res) => {
     });
 });
 
+//Retrieve board
+
 router.get('/:id', (req, res) => {
     Board.findById(req.params.id, (err, data) => {
         if (err) return res.json({success: false, err: err});
@@ -29,27 +24,120 @@ router.get('/:id', (req, res) => {
     });
 });
 
+//Create Board
+router.post('/create', verify, (req, res) => {
+    const newBoard = new Board({
+        name: req.body.name,
+        users: req.body.users,
+        admins: req.body.userID
+    });
+
+    newBoard.save((err) => {
+        if(err) return res.status(400);
+        return res.send(newBoard);
+    });
+
+    User.findById(req.body.userID, (err, data) => {
+        if(err) return res.send(501)
+        data.boards.push(newBoard._id);
+    });
+});
+
+//Delete Board
+router.delete('/delete', (req, res) => {
+    Board.findById(req.body.boardId, (err, data) => {
+        if (err) return res.send(501).json({success: false, err: err});
+
+        data.delete();
+        data.save((err) => {
+            if (err) return res.send(501).json(err)
+        });
+    });
+});
+
+// Admin and User CRUD
+
 router.post('/:id/addUser', (req, res) => {
    Board.findById(req.params.id, (err, data) => {
-    if (err) return res.json({success: false, err: err});
+    if (err) return res.send(501).json({success: false, err: err});
+
+    if(data.users.indexOf(req.body.userID) && data.admins.indexOf(req.body.userID) != -1 ){
+        return res.json('This user already exists.')
+    } 
+
+    User.findById(req.body.userID, (err, data) => {
+        if(err) return res.send(501)
+        data.boards.push(req.params.id);
+    });
     data.users.push(req.body.userID);
-    res.json({data: data});
+    res.json({data});
+    data.save((err) => {
+        if (err) return res.send(501).json(err)
+    });
    });
 });
 
 router.post('/:id/addAdmin', (req, res) => {
     Board.findById(req.params.id, (err, data) => {
-     if (err) return res.json({success: false, err: err});
-     if(data.users.contains )
+     if (err) return res.status(501).json({success: false, err: err});
+
+     if(data.admins.indexOf(req.body.userID) != -1){
+        return res.json('This admin already exists.')
+    } 
+
+    var i;
+    for(i = 0; i < data.users.length; i++){
+        if(data.users[i] === req.body.userID){
+            data.users.splice(i, 1);
+        }
+    }
      data.admins.push(req.body.userID);
      res.json({data: data});
+     data.save((err) => {
+        if (err) return res.send(501).json(err)
+    });
     });
  });
 
+router.delete('/:id/deleteUser', (req, res) => {
+    Board.findById(req.params.id, (err, data) => {
+        if (err) return res.send(501).json({success: false, err: err});
+
+        var i;
+        for(i = 0; i < data.users.length; i++){
+            if(data.users[i] === req.body.userID){
+                data.users.splice(i, 1);
+            }
+        }
+        res.json({data});
+        data.save((err) => {
+        if (err) return res.send(501).json(err)
+    });
+    });
+    
+});
+
+router.delete('/:id/deleteAdmin', (req, res) => {
+    Board.findById(req.params.id, (err, data) => {
+        if (err) return res.send(501).json({success: false, err: err});
+        var user = req.body.userID;
+        var x;
+        for(x = 0; x < data.admins.length; x++){
+            if(data.admins[x] === user){
+                data.admins.splice(x, 1);
+            }
+        }
+        res.json({data});
+        data.save((err) => {
+            if (err) return res.send(501).json(err)
+        });
+    });
+});
+
 router.delete('/:id/delete', (req, res) => {
     Board.findByIdAndDelete(req.params.id, (err, data) => {
-    if (err) return res.json({success: false, err: err});
-    return res.json({success: true});
+        if (err) return res.send(501).json({success: false, err: err});
+        return res.json({success: true});
     });
  });
 
