@@ -25,7 +25,7 @@ router.get('/:id', (req, res) => {
 });
 
 //Create Board
-router.post('/create', verify, (req, res) => {
+router.post('/create', verify.userVerif, (req, res) => {
     const newBoard = new Board({
         name: req.body.name,
         users: req.body.users,
@@ -99,7 +99,7 @@ router.post('/:id/addAdmin', (req, res) => {
     });
  });
 
-router.delete('/:id/deleteUser', (req, res) => {
+router.delete('/:id/deleteUser', verify.userVerif ,verify.adminVerif, (req, res) => {
     Board.findById(req.params.id, (err, data) => {
         if (err) return res.send(501).json({success: false, err: err});
 
