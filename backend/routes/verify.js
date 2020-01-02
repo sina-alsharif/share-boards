@@ -21,16 +21,32 @@ function adminVerif(req, res, next) {
         const usertkn = req.header('auth-token');
         if(!usertkn) return res.status(401).send('Forbidden');
 
-        const tkn = usertkn.split(' ');
         const requestID = jwt.verify(usertkn, process.env.TOKEN_SCRT)._id;
 
         if(data.admins.indexOf(requestID) === -1 ){
             return res.status(401).send("You are not an admin.");
         } 
 
+        next();
+    });
+}
+
+function userCheck(req, res, next){
+    Board.findById(req.params.id, (err, data) => {
+        if (err) return res.status(501)
+
+        const usertkn = req.header('auth-token');
+        if(!usertkn) return res.status(401).send('Forbidden');
+
+        const requestID = jwt.verify(usertkn, process.env.TOKEN_SCRT)._id;
+
+        if(data.users.indexOf(requestID) === -1 ){
+            return res.status(401).send("You are not an admin.");
+        } 
 
         next();
     });
 }
 
-module.exports = {userVerif: auth, adminVerif: adminVerif};
+
+module.exports = {userVerif: auth, adminCheck: adminVerif, userCheck: userCheck};

@@ -16,7 +16,6 @@ router.get('/all', (req, res) => {
 });
 
 //Retrieve board
-
 router.get('/:id', (req, res) => {
     Board.findById(req.params.id, (err, data) => {
         if (err) return res.json({success: false, err: err});
@@ -99,7 +98,7 @@ router.post('/:id/addAdmin', (req, res) => {
     });
  });
 
-router.delete('/:id/deleteUser', verify.userVerif ,verify.adminVerif, (req, res) => {
+router.delete('/:id/deleteUser', verify.userVerif ,verify.adminCheck, (req, res) => {
     Board.findById(req.params.id, (err, data) => {
         if (err) return res.send(501).json({success: false, err: err});
 
@@ -134,11 +133,16 @@ router.delete('/:id/deleteAdmin', (req, res) => {
     });
 });
 
-router.delete('/:id/delete', (req, res) => {
-    Board.findByIdAndDelete(req.params.id, (err, data) => {
+//Update text
+router.post('/:id/updateText', (req, res) => {
+    Board.findById(req.params.id, (err, data) => {
         if (err) return res.send(501).json({success: false, err: err});
-        return res.json({success: true});
+
+        data.text = req.body.text;
+        data.save((err) => {
+            if (err) return res.send(501).json(err)
+        });
     });
- });
+});
 
 module.exports = router;
