@@ -1,0 +1,20 @@
+{
+  "name": "share-boards",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sina-alsharif/share-boards.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sina-alsharif/share-boards/issues"
+  },
+  "homepage": "https://github.com/sina-alsharif/share-boards#readme"
+}
