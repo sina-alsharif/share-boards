@@ -3,3 +3,11 @@
     margin: auto;
     margin-top: 10%;
 }
+.message {
+    margin: 5%;
+    color: red;
+}
+
+.btn {
+    margin: 5%;
+}

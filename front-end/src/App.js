@@ -1,10 +1,15 @@
-import React from 'react';
+import React, {useState, useContext} from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import LoginForm from './components/Login/Login';
+import {LoginProvider} from './components/Login/LoginContext';
 
 function App() {
+
+ // const [logged, setLogged] = useContext(LoginProvider);
+
   return (
+    <LoginProvider>
     <div className="App">
       <link
   rel="stylesheet"
@@ -13,7 +18,9 @@ function App() {
   crossOrigin="anonymous"
 />
       <LoginForm/>
+     
     </div>
+    </LoginProvider>
   );
 }
 

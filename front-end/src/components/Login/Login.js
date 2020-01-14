@@ -1,17 +1,20 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import axios from 'axios';
 import './Login.css';
+import { LoginContext } from './LoginContext';
 
  const LoginForm = () => {
    const [email, setEmail] = useState("");
    const [password, setPassword] = useState("");
+   const [message, setMessage] = useState("");
+   const [regis, setRegis] = useState(false);
 
+   const [logged, setLogged] = useContext(LoginContext);
 
    const submitHandler = () => {
    const data = {email: email, password: password};
-    const options = {
+   const options = {
       method: 'POST',
       headers: {
         mode: 'cors',
@@ -19,18 +22,20 @@ import './Login.css';
       },
       body: JSON.stringify(data)
     };
+
     console.log(options);
-
+    if(regis === true){
+      fetch('http://localhost:8080/api/users/register', options)
+    .then(res =>  {console.log(res.status); 
+      if(res.status !== 200) { setMessage("Email or password is in incorrect format") } else setMessage("Account registered successfully, please login.")});
+    }
+    else{
     fetch('http://localhost:8080/api/users/login', options)
-    .then(res => { console.log(res) })
-
+    .then(res =>  {console.log(res.status); 
+      if(res.status !== 200) { setMessage("Email or password is incorrect") } else {setMessage(""); setLogged(true);}});
    }
+  }
 
-  //  const submitHandler = () => {
-  //    axios.post('http://localhost:3001/api/users/login', {email: email, password: password}, { 'Content-Type': 'application/json' } )
-  //    .then(res => console.log(res))
-  //    .then(err => console.log(err));
-  //  }
   return (
     <div className="formContainer">
         <Form>
@@ -46,12 +51,13 @@ import './Login.css';
     <Form.Label>Password</Form.Label>
     <Form.Control type="password" placeholder="Password" value={password} onChange={event => setPassword(event.target.value)}/>
   </Form.Group>
-  {/* <Form.Group controlId="formBasicCheckbox">
-    <Form.Check type="checkbox" label="Check me out" />
-  </Form.Group> */}
-  <Button variant="primary" onClick={submitHandler} >
-    Submit
+  <Button className="btn" variant="primary" onClick={() => { setRegis(() => false); submitHandler(); }} >
+    Login
   </Button>
+  <Button className="btn" variant="info" onClick={() => {setRegis(() => true); submitHandler(); }} >
+    Register
+  </Button>
+  <p className="message">{ message } logged is { logged.toString() } </p>
 </Form>
     </div>
   );
