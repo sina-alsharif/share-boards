@@ -1,8 +1,10 @@
 import React, {useState, useContext} from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import Dashboard from '../Dashboard/Dashboard';
 import './Login.css';
 import { LoginContext } from './LoginContext';
+import { UserContext } from './UserContext';
 
  const LoginForm = () => {
    const [email, setEmail] = useState("");
@@ -11,6 +13,8 @@ import { LoginContext } from './LoginContext';
    const [regis, setRegis] = useState(false);
 
    const [logged, setLogged] = useContext(LoginContext);
+   const [userID, setuserID] = useContext(UserContext);
+   const [token, setToken] = useContext(UserContext);
 
    const submitHandler = () => {
    const data = {email: email, password: password};
@@ -26,19 +30,22 @@ import { LoginContext } from './LoginContext';
     console.log(options);
     if(regis === true){
       fetch('http://localhost:8080/api/users/register', options)
-    .then(res =>  {console.log(res.status); 
+    .then(res =>  {console.log(res); 
       if(res.status !== 200) { setMessage("Email or password is in incorrect format") } else setMessage("Account registered successfully, please login.")});
     }
     else{
     fetch('http://localhost:8080/api/users/login', options)
-    .then(res =>  {console.log(res.status); 
-      if(res.status !== 200) { setMessage("Email or password is incorrect") } else {setMessage(""); setLogged(true);}});
+    .then(res => res.json())
+    .then( res => {
+      if(res.status !== 200) { setMessage(res.message) } else {setMessage(""); setLogged(true); setuserID(res.userID); setToken(res.token);} console.log(res);
+     });
    }
   }
 
   return (
     <div className="formContainer">
-        <Form>
+      { logged ?  
+       <Dashboard/> : <Form>
   <Form.Group controlId="formBasicEmail">
     <Form.Label>Email address</Form.Label>
     <Form.Control type="email" placeholder="Enter email" value={email} onChange={event => setEmail(event.target.value)}/>
@@ -51,14 +58,15 @@ import { LoginContext } from './LoginContext';
     <Form.Label>Password</Form.Label>
     <Form.Control type="password" placeholder="Password" value={password} onChange={event => setPassword(event.target.value)}/>
   </Form.Group>
-  <Button className="btn" variant="primary" onClick={() => { setRegis(() => false); submitHandler(); }} >
+  <Button className="btn" variant="primary" onClick={() => { setRegis(() => false); submitHandler();}} >
     Login
   </Button>
-  <Button className="btn" variant="info" onClick={() => {setRegis(() => true); submitHandler(); }} >
+  <Button className="btn" variant="info" onClick={() => {setRegis(() => true); submitHandler();}} >
     Register
   </Button>
   <p className="message">{ message } logged is { logged.toString() } </p>
-</Form>
+</Form> 
+ }
     </div>
   );
 }

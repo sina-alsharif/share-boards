@@ -40,17 +40,17 @@ router.post('/login', async (req, res) => {
 
     const { error } = validSchema.validate(req.body);
     if (error != null) {
-        return res.status(401).send(error.details[0].message);
+        return res.status(401).json({message: error.details[0].message});
     }
 
     const user = await User.findOne({email: req.body.email});
-    if (!user) return res.status(401).send("The email provided is not valid.");
+    if (!user) return res.status(401).json({message: "The email provided is not valid."});
 
     const validPass = await bcrypt.compare(req.body.password, user.password);
-    if(!validPass) return res.status(401).send("The password is invalid.");
+    if(!validPass) return res.status(401).json({message: "The password is not valid."});
 
     const token = jwt.sign({_id: user._id}, process.env.TOKEN_SCRT);
-    res.header('auth-token', token).send(token);
+    res.header('auth-token', token).json({userID: user._id, status: 200, token: token});
 });
 
 
