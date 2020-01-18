@@ -50,7 +50,7 @@ router.post('/login', async (req, res) => {
     if(!validPass) return res.status(401).json({message: "The password is not valid."});
 
     const token = jwt.sign({_id: user._id}, process.env.TOKEN_SCRT);
-    res.header('auth-token', token).json({userID: user._id, status: 200, token: token});
+    res.header('auth-token', token).json({userID: user._id, status: 200, token: token, boards: user.boards});
 });
 
 

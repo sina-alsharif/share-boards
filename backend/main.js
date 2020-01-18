@@ -14,6 +14,6 @@ mongoose.connect(process.env.MONGODB_AUTH, {useNewUrlParser: true, useUnifiedTop
 app.use(express.json());
 app.use(cors());
 app.use('/api/users', authRoute);
-app.use('/api/board', boardRoute);
+app.use('/api/boards', boardRoute);
 
 app.listen(8080, () => console.log("Server is running."));

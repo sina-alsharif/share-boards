@@ -2,6 +2,8 @@ import React from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import LoginForm from './components/Login/Login';
+import 'bulma/css/bulma.css';
+//import './App.sass';
 import {LoginProvider } from './components/Login/LoginContext';
 import {UserProvider } from './components/Login/UserContext';
 

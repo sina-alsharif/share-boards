@@ -15,7 +15,8 @@ import { UserContext } from './UserContext';
    const [logged, setLogged] = useContext(LoginContext);
    const [userID, setuserID] = useContext(UserContext);
    const [token, setToken] = useContext(UserContext);
-
+   const [boards, setBoards] = useContext(UserContext);
+ 
    const submitHandler = () => {
    const data = {email: email, password: password};
    const options = {
@@ -37,15 +38,24 @@ import { UserContext } from './UserContext';
     fetch('http://localhost:8080/api/users/login', options)
     .then(res => res.json())
     .then( res => {
-      if(res.status !== 200) { setMessage(res.message) } else {setMessage(""); setLogged(true); setuserID(res.userID); setToken(res.token);} console.log(res);
+      if(res.status !== 200) { setMessage(res.message) } 
+      else {
+        setMessage(""); 
+        setLogged(true); 
+        setuserID(res.userID); 
+        setToken(res.token); 
+        setBoards(res.boards); } 
+        console.log(res);
      });
    }
   }
 
   return (
-    <div className="formContainer">
+    <>
       { logged ?  
-       <Dashboard/> : <Form>
+       <Dashboard/> :
+       <div className="formContainer">
+        <Form>
   <Form.Group controlId="formBasicEmail">
     <Form.Label>Email address</Form.Label>
     <Form.Control type="email" placeholder="Enter email" value={email} onChange={event => setEmail(event.target.value)}/>
@@ -66,8 +76,9 @@ import { UserContext } from './UserContext';
   </Button>
   <p className="message">{ message } logged is { logged.toString() } </p>
 </Form> 
+</div>
  }
-    </div>
+ </>
   );
 }
  export default LoginForm;
