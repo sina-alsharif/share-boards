@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const User = require('../models/User');
+const verify = require('./verify');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Joi = require('@hapi/joi');
@@ -53,5 +54,11 @@ router.post('/login', async (req, res) => {
     res.header('auth-token', token).json({userID: user._id, status: 200, token: token, boards: user.boards});
 });
 
+router.get('/:id', (req, res) => {
+    User.findById(req.params.id, (err, data) => {
+        if (err) return res.json({success: false, err: err});
+        return res.json({data: data});
+    });
+});
 
 module.exports = router;

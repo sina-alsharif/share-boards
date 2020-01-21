@@ -1,0 +1,21 @@
+.cardcustom{
+    margin: 2.5%;
+    float: left;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    padding: 20px 16px;
+}
+.cardcustom:hover{
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.6);
+    cursor: pointer;
+}
+.cont{
+    margin-top: 5%;
+}
+.btncustom{
+    padding: 0px;
+}
+.plus{
+    font-size: 3rem;
+    padding: 5px 5px;
+}

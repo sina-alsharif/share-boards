@@ -16,39 +16,47 @@ import { UserContext } from './UserContext';
    const [userID, setuserID] = useContext(UserContext);
    const [token, setToken] = useContext(UserContext);
    const [boards, setBoards] = useContext(UserContext);
- 
-   const submitHandler = () => {
-   const data = {email: email, password: password};
-   const options = {
-      method: 'POST',
-      headers: {
-        mode: 'cors',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data)
-    };
 
-    console.log(options);
-    if(regis === true){
-      fetch('http://localhost:8080/api/users/register', options)
-    .then(res =>  {console.log(res); 
-      if(res.status !== 200) { setMessage("Email or password is in incorrect format") } else setMessage("Account registered successfully, please login.")});
-    }
-    else{
-    fetch('http://localhost:8080/api/users/login', options)
-    .then(res => res.json())
-    .then( res => {
-      if(res.status !== 200) { setMessage(res.message) } 
-      else {
-        setMessage(""); 
-        setLogged(true); 
-        setuserID(res.userID); 
-        setToken(res.token); 
-        setBoards(res.boards); } 
-        console.log(res);
-     });
+   const submitHandler = () => {
+     const data = {
+       email: email,
+       password: password
+     };
+     const options = {
+       method: 'POST',
+       headers: {
+         mode: 'cors',
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify(data)
+     };
+
+     console.log(options);
+     if (regis === true) {
+       fetch('http://localhost:8080/api/users/register', options)
+         .then(res => {
+           console.log(res);
+           if (res.status !== 200) {
+             setMessage("Email or password is in incorrect format")
+           } else setMessage("Account registered successfully, please login.")
+         });
+     } else {
+       fetch('http://localhost:8080/api/users/login', options)
+         .then(res => res.json())
+         .then(res => {
+           if (res.status !== 200) {
+             setMessage(res.message)
+           } else {
+             setMessage("");
+             setLogged(true);
+             setuserID(res.userID);
+             setToken(res.token);
+             setBoards(res.boards);
+           }
+           console.log(res);
+         });
+     }
    }
-  }
 
   return (
     <>

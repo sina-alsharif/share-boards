@@ -56,6 +56,7 @@ router.delete('/:id/delete', (req, res) => {
 // Admin and User CRUD
 
 router.post('/:id/addUser', (req, res) => {
+    if(req.body.userID)
    Board.findById(req.params.id, (err, data) => {
     if (err) return res.send(501).json({success: false, err: err});
 
