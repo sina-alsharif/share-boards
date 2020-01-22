@@ -8,7 +8,7 @@ export const UserProvider = (props) => {
     const [boards, setBoards] = useState();
 
     return(
-        <UserContext.Provider value={[userID, setuserID], [token, setToken], [boards, setBoards]}>
+        <UserContext.Provider value={{userID1: [userID, setuserID], token1: [token, setToken], boards1: [boards, setBoards]}}> 
             {props.children}
         </UserContext.Provider>
     )

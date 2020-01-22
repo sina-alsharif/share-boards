@@ -13,9 +13,11 @@ import { UserContext } from './UserContext';
    const [regis, setRegis] = useState(false);
 
    const [logged, setLogged] = useContext(LoginContext);
-   const [userID, setuserID] = useContext(UserContext);
-   const [token, setToken] = useContext(UserContext);
-   const [boards, setBoards] = useContext(UserContext);
+  
+    const {userID1, token1, boards1} = useContext(UserContext);
+    const [userID, setuserID] = userID1;
+    const [token, setToken] = token1;
+    const [boards, setBoards] = boards1;
 
    const submitHandler = () => {
      const data = {
@@ -58,10 +60,11 @@ import { UserContext } from './UserContext';
      }
    }
 
+
   return (
     <>
       { logged ?  
-       <Dashboard/> :
+       <Dashboard email={email} password={password}/> :
        <div className="formContainer">
         <Form>
   <Form.Group controlId="formBasicEmail">

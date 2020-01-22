@@ -52,7 +52,7 @@ const divClickHandler = async () => {
 
 
   return (
-    <div className="cont">
+    <div className="column">
          <div className="cardcustom" onClick={divClickHandler}>
             <h1>{props.name}</h1>
     </div>

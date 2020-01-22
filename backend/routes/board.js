@@ -21,7 +21,7 @@ router.get('/:id', (req, res) => {
 });
 
 //Create Board
-router.post('/create', verify.userVerif, (req, res) => {
+router.post('/create', (req, res) => {
     const newBoard = new Board({
         name: req.body.name,
         users: req.body.users,
@@ -45,6 +45,17 @@ router.delete('/:id/delete', (req, res) => {
     Board.findById(req.params.id, (err, data) => {
         if (err) return res.send(501).json({success: false, err: err});
 
+        for(var i = 0; i < data.users.length; i++){
+            User.findById(data.users[i], (err, data) => {
+                if(err || !data) return res.send(501)
+        
+                const index = data.boards.indexOf(req.params.id);
+                if (index > -1){
+                    data.boards(index, 1);
+                }
+            });
+        }
+
         data.delete();
         data.save((err) => {
             if (err) return res.send(501).json(err)
@@ -56,22 +67,32 @@ router.delete('/:id/delete', (req, res) => {
 // Admin and User CRUD
 
 router.post('/:id/addUser', (req, res) => {
-    if(req.body.userID)
-   Board.findById(req.params.id, (err, data) => {
+    if(req.body.user)
+    var userID = "";
+   Board.findById(req.params.id, async (err, data) => {
     if (err) return res.send(501).json({success: false, err: err});
 
-    if(data.users.indexOf(req.body.userID) && data.admins.indexOf(req.body.userID) != -1 ){
+   await User.findOne({email: req.body.user}, (err, data) => {
+        if (err) return res.send(501).json({success: false, err: err});
+        
+        userID = data._id;
+        console.log(userID);
+
+    });
+   
+    if(data.users.indexOf(userID) && data.admins.indexOf(userID) != -1 ){
         return res.json('This user already exists.')
     } 
-
-    User.findById(req.body.userID, (err, data) => {
+    if(!userID) return res.status(501).send("Failed.");
+    
+    User.findById(userID, (err, data) => {
         if(err) return res.send(501)
         data.boards.push(req.params.id);
         data.save((err) => {
             if (err) return res.send(501).json(err)
         });
     });
-    data.users.push(req.body.userID);
+    data.users.push(userID);
     res.json({data});
     data.save((err) => {
         if (err) return res.send(501).json(err)
@@ -129,7 +150,15 @@ router.delete('/:id/deleteUser', verify.userVerif ,verify.adminCheck, (req, res)
         if (err) return res.send(501).json(err)
     });
     });
-    
+
+    User.findById(req.body.userID, (err, data) => {
+        if(err || !data) return res.send(501)
+
+        const index = data.boards.indexOf(req.params.id);
+        if (index > -1){
+            data.boards(index, 1);
+        }
+    });
 });
 
 router.delete('/:id/deleteAdmin', (req, res) => {
@@ -146,6 +175,14 @@ router.delete('/:id/deleteAdmin', (req, res) => {
         data.save((err) => {
             if (err) return res.send(501).json(err)
         });
+    });
+    User.findById(req.body.userID, (err, data) => {
+        if(err || !data) return res.send(501)
+
+        const index = data.boards.indexOf(req.params.id);
+        if (index > -1){
+            data.boards(index, 1);
+        }
     });
 });
 
