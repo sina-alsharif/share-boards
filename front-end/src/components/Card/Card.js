@@ -1,7 +1,8 @@
 /* eslint-disable */
-import React, {useState, useEffect} from 'react';
+import React, {useState, useContext} from 'react';
 import Modal from 'react-bootstrap/Modal';
 import './Card.css';
+import { UserContext } from '../Login/UserContext';
 
 export default function Cardp(props) {
 
@@ -9,6 +10,10 @@ export default function Cardp(props) {
   const [admins, setAdmins] = useState([]);
   const [show, setShow] = useState(false);
 
+  const {userID1, token1, boardObj1} = useContext(UserContext);
+  const [boardObj, setBoardObj] = boardObj1; 
+  const [userID, setuserID] = userID1;
+  const [token, setToken] = token1;
 
   const fetchUser = async (userID) =>{
     var url = `http://localhost:8080/api/users/${userID}`;
@@ -50,6 +55,32 @@ const divClickHandler = async () => {
   setShow(true);
 }
 
+const deleteClickHandler = () => {
+  const options = {
+    method: 'DELETE',
+    headers: {
+      mode: 'cors',
+      'Content-Type': 'application/json',
+    }
+  };
+  const url = `http://localhost:8080/api/boards/${props.board._id}/delete`;
+  console.log(url);
+  fetch(url, options)
+  .then(res => {if(res.status === 200){
+    setShow(false);
+
+    var arr = boardObj;
+    
+    console.log(boardObj);
+    var index = arr.findIndex(b => b._id == props.board._id);
+    if(index > -1){
+      arr.splice(index, 1);
+      setBoardObj(arr);
+      console.log(boardObj);
+      props.blank();
+    }
+  }});
+}
 
   return (
     <div className="column">
@@ -65,6 +96,7 @@ const divClickHandler = async () => {
           <Modal.Title id="modal">
             {props.name}
           </Modal.Title>
+          <a className="delbtn" onClick={deleteClickHandler}><i className="fa fa-trash"></i> Delete</a>
         </Modal.Header>
         <Modal.Body>
           <p>

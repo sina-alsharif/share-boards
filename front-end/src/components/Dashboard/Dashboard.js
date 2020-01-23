@@ -10,15 +10,14 @@ import { UserContext } from '../Login/UserContext';
 
 export default function Dashboard(props) {
 
-  const [boardObj, setBoardObj] = useState([]); 
   const [show, setShow] = useState(false);
   const [name, setName] = useState("");
   const [users, setUsers] = useState([]);
   const [message, setMessage] = useState("");
   const [userstring, setUserstring] = useState("");
-  const [trigger, setTrigger] = useState(false);
 
-  const {userID1, token1, boards1} = useContext(UserContext);
+  const {userID1, token1, boards1, boardObj1} = useContext(UserContext);
+  const [boardObj, setBoardObj] = boardObj1; 
   const [userID, setuserID] = userID1;
   const [token, setToken] = token1;
   const [boards, setBoards] = boards1;
@@ -26,7 +25,7 @@ export default function Dashboard(props) {
 
   useEffect(() => {
     if (boards) {
-
+      setBoardObj([]);
       for (var i = 0; i < boards.length; i++) {
         var url = `http://localhost:8080/api/boards/${boards[i]}`;
         console.log(url);
@@ -42,30 +41,6 @@ export default function Dashboard(props) {
     }
   }, [boards]);
 
-  const fetchBoards = () => {
-    const data = {
-      email: props.email,
-      password: props.password
-    };
-    const options = {
-      method: 'POST',
-      headers: {
-        mode: 'cors',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data)
-    };
-    fetch('http://localhost:8080/api/users/login', options)
-    .then(res => res.json())
-    .then(res => {
-      if (res.status !== 200) {
-        return;
-      } else {
-        setBoards(res.boards);
-      }
-      console.log(res);
-    });
-  }
 
   const addSubmitHandler = () => {
     if(name){
@@ -85,16 +60,17 @@ export default function Dashboard(props) {
     };
 
     fetch('http://localhost:8080/api/boards/create', options2)
-    .then(res => {setShow(false); console.log(res);});
+    .then(res => res.json())
+    .then(res => {setShow(false); setBoardObj(boardObj => [...boardObj, res.data]); setBoards(boards => [...boards, res.data._id]); console.log(res);});
     console.log("Added.", options2);
     console.log(boards, userID);
-    fetchBoards();
   }
   else{
     setMessage("Please enter a name.");
   }
   }
   
+  const blank = () => {setShow(true); setShow(false);};
   return (
     <>
     <Navbar>
@@ -107,7 +83,7 @@ export default function Dashboard(props) {
     </Navbar.Collapse>
   </Navbar>
     <div>
-    {boardObj.length > 0  &&  boardObj.map(board => <Cardp key={board._id} name={board.name} users={board.users} board={board}/>)}
+    {boardObj.length > 0  &&  boardObj.map(board => <Cardp key={board._id} name={board.name} users={board.users} board={board} blank={blank}/>)}
     </div>
     <Modal
         show={show}

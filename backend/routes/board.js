@@ -28,9 +28,9 @@ router.post('/create', (req, res) => {
         admins: req.body.userID
     });
 
-    newBoard.save((err) => {
+    newBoard.save((err, data) => {
         if(err) return res.status(400);
-        return res.send(newBoard);
+        return res.json({data: data});
     });
 
     User.findById(req.body.userID, (err, data) => {
@@ -43,7 +43,7 @@ router.post('/create', (req, res) => {
 //Delete Board
 router.delete('/:id/delete', (req, res) => {
     Board.findById(req.params.id, (err, data) => {
-        if (err) return res.send(501).json({success: false, err: err});
+        if (err) return res.sendStatus(501).json({success: false, err: err});
 
         for(var i = 0; i < data.users.length; i++){
             User.findById(data.users[i], (err, data) => {
@@ -51,8 +51,25 @@ router.delete('/:id/delete', (req, res) => {
         
                 const index = data.boards.indexOf(req.params.id);
                 if (index > -1){
-                    data.boards(index, 1);
+                    data.boards.splice(index, 1);
                 }
+                data.save((err) => {
+                    if (err) return res.send(501).json(err)
+                });
+            });
+        }
+
+        for(var i = 0; i < data.admins.length; i++){
+            User.findById(data.admins[i], (err, data) => {
+                if(err || !data) return res.send(501)
+        
+                const index = data.boards.indexOf(req.params.id);
+                if (index > -1){
+                    data.boards.splice(index, 1);
+                }
+                data.save((err) => {
+                    if (err) return res.send(501).json(err)
+                });
             });
         }
 
