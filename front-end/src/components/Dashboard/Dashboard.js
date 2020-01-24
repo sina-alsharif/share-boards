@@ -41,35 +41,67 @@ export default function Dashboard(props) {
     }
   }, [boards]);
 
-
-  const addSubmitHandler = () => {
-    if(name){
-    setUsers(userstring.split(', '));
-    const data = {
-      name: name,
-      users: users,
-      userID: userID
-    };
-    const options2 = {
+  const addUser = (userEmail, boardID) => {
+    const email = userEmail.replace(/\s/g, '');
+    console.log(userEmail);
+    const options = {
       method: 'POST',
       headers: {
         mode: 'cors',
         'Content-Type': 'application/json',
+        'auth-token': token
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify({
+        user: email
+      })
     };
 
-    fetch('http://localhost:8080/api/boards/create', options2)
-    .then(res => res.json())
-    .then(res => {setShow(false); setBoardObj(boardObj => [...boardObj, res.data]); setBoards(boards => [...boards, res.data._id]); console.log(res);});
-    console.log("Added.", options2);
-    console.log(boards, userID);
+    fetch(`http://localhost:8080/api/boards/${boardID}/addUser`, options)
+      .then(res => console.log(res));
+    return;
   }
-  else{
-    setMessage("Please enter a name.");
+
+  const addSubmitHandler = async () => {
+    if (name) {
+
+      const data = {
+        name: name,
+        userID: userID
+      };
+      const options2 = {
+        method: 'POST',
+        headers: {
+          mode: 'cors',
+          'Content-Type': 'application/json',
+          'auth-token': token
+        },
+        body: JSON.stringify(data)
+      };
+
+      var tempusers = userstring.split(', ');
+      
+      console.log(userstring, users);
+      fetch('http://localhost:8080/api/boards/create', options2)
+        .then(res => res.json())
+        .then(async res => {
+          for (var i = 0; i < tempusers.length; i++) {
+            await addUser(tempusers[i], res.data._id);
+          }
+          setShow(false);
+          setBoardObj(boardObj => [...boardObj, res.data]);
+          setBoards(boards => [...boards, res.data._id]);
+          setUserstring("");
+          setName("");
+          console.log(res);
+        });
+       await setUsers(tempusers);
+       console.log(users, tempusers);
+      console.log("Added.", options2);
+      console.log(boards, userID);
+    } else {
+      setMessage("Please enter a name.");
+    }
   }
-  }
-  
   const blank = () => {setShow(true); setShow(false);};
   return (
     <>

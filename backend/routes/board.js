@@ -21,10 +21,10 @@ router.get('/:id', (req, res) => {
 });
 
 //Create Board
-router.post('/create', (req, res) => {
+router.post('/create', verify.userVerif, (req, res) => {
     const newBoard = new Board({
         name: req.body.name,
-        users: req.body.users,
+        users: [],
         admins: req.body.userID
     });
 
@@ -41,7 +41,7 @@ router.post('/create', (req, res) => {
 });
 
 //Delete Board
-router.delete('/:id/delete', (req, res) => {
+router.delete('/:id/delete', verify.userVerif, verify.adminCheck, (req, res) => {
     Board.findById(req.params.id, (err, data) => {
         if (err) return res.sendStatus(501).json({success: false, err: err});
 
@@ -83,7 +83,7 @@ router.delete('/:id/delete', (req, res) => {
 
 // Admin and User CRUD
 
-router.post('/:id/addUser', (req, res) => {
+router.post('/:id/addUser', verify.userVerif, (req, res) => {
     if(req.body.user)
     var userID = "";
    Board.findById(req.params.id, async (err, data) => {

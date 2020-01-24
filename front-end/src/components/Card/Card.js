@@ -15,19 +15,19 @@ export default function Cardp(props) {
   const [userID, setuserID] = userID1;
   const [token, setToken] = token1;
 
-  const fetchUser = async (userID) =>{
+  const fetchUser = async (userID) => {
     var url = `http://localhost:8080/api/users/${userID}`;
     var resp;
     await fetch(url)
-    .then(res => res.json())
-    .then(res =>{
-      if (res.data) {
-        console.log("Email data: " + res.data.email);
-        resp = res;
-      }
-    });
+      .then(res => res.json())
+      .then(res => {
+        if (res.data) {
+          console.log("Email data: " + res.data.email);
+          resp = res;
+        }
+      });
     return resp.data.email;
-}
+  }
 
 function wait(ms) {
   return new Promise(r => setTimeout(r, ms));
@@ -61,6 +61,7 @@ const deleteClickHandler = () => {
     headers: {
       mode: 'cors',
       'Content-Type': 'application/json',
+      'auth-token': token
     }
   };
   const url = `http://localhost:8080/api/boards/${props.board._id}/delete`;
