@@ -49,6 +49,15 @@
     background-color:#FFFFFF;
     border: 0.1em solid red;
   }
+
+  .nameList{
+    margin-left: 1rem;
+  }
+
+  .spinner{
+    position: absolute;
+    right: 15px;
+  }
   /* Responsive columns - one column layout (vertical) on small screens */
   @media screen and (max-width: 600px) {
     .column {

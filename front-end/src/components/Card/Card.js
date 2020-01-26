@@ -2,6 +2,7 @@
 import React, {useState, useContext} from 'react';
 import Modal from 'react-bootstrap/Modal';
 import './Card.css';
+import Spinner from 'react-bootstrap/Spinner';
 import { UserContext } from '../Login/UserContext';
 
 export default function Cardp(props) {
@@ -9,6 +10,7 @@ export default function Cardp(props) {
   const [users, setUsers] = useState([]);
   const [admins, setAdmins] = useState([]);
   const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const {userID1, token1, boardObj1} = useContext(UserContext);
   const [boardObj, setBoardObj] = boardObj1; 
@@ -34,7 +36,7 @@ function wait(ms) {
 }
 
 const divClickHandler = async () => {
-
+ setLoading(true);
   if (users.length === 0) {
     for (var i = 0; i < props.board.users.length; i++) {
       var email = await fetchUser(props.board.users[i]);
@@ -53,6 +55,7 @@ const divClickHandler = async () => {
   }
   console.log(props.board.admins, admins);
   setShow(true);
+  setLoading(false);
 }
 
 const deleteClickHandler = () => {
@@ -87,6 +90,9 @@ const deleteClickHandler = () => {
     <div className="column">
          <div className="cardcustom" onClick={divClickHandler}>
             <h1>{props.name}</h1>
+           { loading && <Spinner className="spinner" animation="border" role="status">
+              <span className="sr-only">Loading...</span>
+  </Spinner> }
     </div>
     <Modal
         show={show}
@@ -100,12 +106,14 @@ const deleteClickHandler = () => {
           <a className="delbtn" onClick={deleteClickHandler}><i className="fa fa-trash"></i> Delete</a>
         </Modal.Header>
         <Modal.Body>
-          <p>
-            Admins: {admins}
-          </p>
-          <p>
-            Users: {users}
-          </p>
+        Admins: 
+          <div className="nameList">
+            {admins.map(admin => <li key={admin.toString()}> {admin} </li>)}
+          </div>
+          Users: 
+          <div className="nameList">
+            {users.map(user => <li key={user.toString()}> { user } </li>)}
+          </div>
         </Modal.Body>
       </Modal>
     </div>

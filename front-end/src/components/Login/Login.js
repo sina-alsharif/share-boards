@@ -10,7 +10,6 @@ import { UserContext } from './UserContext';
    const [email, setEmail] = useState("");
    const [password, setPassword] = useState("");
    const [message, setMessage] = useState("");
-   const [regis, setRegis] = useState(false);
 
    const [logged, setLogged] = useContext(LoginContext);
   
@@ -19,7 +18,7 @@ import { UserContext } from './UserContext';
     const [token, setToken] = token1;
     const [boards, setBoards] = boards1;
 
-   const submitHandler = () => {
+   const loginHandler = () => {
      const data = {
        email: email,
        password: password
@@ -33,31 +32,46 @@ import { UserContext } from './UserContext';
        body: JSON.stringify(data)
      };
 
+     fetch('http://localhost:8080/api/users/login', options)
+       .then(res => res.json())
+       .then(res => {
+         if (res.status !== 200) {
+           setMessage(res.message)
+         } else {
+           setMessage("");
+           setLogged(true);
+           setuserID(res.userID);
+           setToken(res.token);
+           setBoards(res.boards);
+         }
+         console.log(res);
+       });
+
      console.log(options);
-     if (regis === true) {
-       fetch('http://localhost:8080/api/users/register', options)
-         .then(res => {
-           console.log(res);
-           if (res.status !== 200) {
-             setMessage("Email or password is in incorrect format")
-           } else setMessage("Account registered successfully, please login.")
-         });
-     } else {
-       fetch('http://localhost:8080/api/users/login', options)
-         .then(res => res.json())
-         .then(res => {
-           if (res.status !== 200) {
-             setMessage(res.message)
-           } else {
-             setMessage("");
-             setLogged(true);
-             setuserID(res.userID);
-             setToken(res.token);
-             setBoards(res.boards);
-           }
-           console.log(res);
-         });
-     }
+   }
+
+   const registerHandler = async () => {
+     const data = {
+       email: email,
+       password: password
+     };
+     const options = {
+       method: 'POST',
+       headers: {
+         mode: 'cors',
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify(data)
+     };
+
+
+     await fetch('http://localhost:8080/api/users/register', options)
+       .then(res => res.json())
+       .then(res => {
+         if (res.status !== 200) {
+           setMessage(res.err);
+         } else setMessage("Account registered successfully, please login.")
+       });
    }
 
 
@@ -79,10 +93,10 @@ import { UserContext } from './UserContext';
     <Form.Label>Password</Form.Label>
     <Form.Control type="password" placeholder="Password" value={password} onChange={event => setPassword(event.target.value)}/>
   </Form.Group>
-  <Button className="btn" variant="primary" onClick={() => { setRegis(() => false); submitHandler();}} >
+  <Button className="btn" variant="primary" onClick={loginHandler} >
     Login
   </Button>
-  <Button className="btn" variant="info" onClick={() => {setRegis(() => true); submitHandler();}} >
+  <Button className="btn" variant="info" onClick={registerHandler} >
     Register
   </Button>
   <p className="message">{ message } logged is { logged.toString() } </p>

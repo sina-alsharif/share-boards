@@ -15,25 +15,24 @@ router.post('/register', async (req, res) => {
 
     const { error } = validSchema.validate(req.body);
     if (error != null) {
-        return res.status(400).send(error.details[0].message);
+        return res.status(402).json({err: error.details[0].message});
     }
 
     const emailExist = await User.findOne({email: req.body.email});
-    if (emailExist) return res.status(400).send("Email already exists.");
+    if (emailExist) return res.status(403).json({err: "Email already exists."});
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
     const user = new User({
-        name: req.body.name,
         email: req.body.email,
         password: hashedPassword
     });
     try{
-        const saveduser = await user.save();
+        await user.save();
         res.send(user._id);
     }catch(err){
-        res.status(400).send(err);
+        res.status(405).json({err: err});
     }
 });
 

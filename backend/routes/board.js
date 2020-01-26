@@ -90,7 +90,7 @@ router.post('/:id/addUser', verify.userVerif, (req, res) => {
     if (err) return res.send(501).json({success: false, err: err});
 
    await User.findOne({email: req.body.user}, (err, data) => {
-        if (err) return res.send(501).json({success: false, err: err});
+        if (err || !data) return res.send(501).json({success: false, err: err});
         
         userID = data._id;
         console.log(userID);
