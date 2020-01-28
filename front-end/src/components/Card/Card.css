@@ -58,6 +58,14 @@
     position: absolute;
     right: 15px;
   }
+
+  .removeUser{
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .removeUser:hover{
+    color: red;
+  }
   /* Responsive columns - one column layout (vertical) on small screens */
   @media screen and (max-width: 600px) {
     .column {

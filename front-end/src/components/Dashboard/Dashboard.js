@@ -22,10 +22,9 @@ export default function Dashboard(props) {
   const [token, setToken] = token1;
   const [boards, setBoards] = boards1;
 
-
-  useEffect(() => {
+  const updateBoards = async () => {
     if (boards) {
-      setBoardObj([]);
+     await setBoardObj([]);
       for (var i = 0; i < boards.length; i++) {
         var url = `http://localhost:8080/api/boards/${boards[i]}`;
         console.log(url);
@@ -39,6 +38,9 @@ export default function Dashboard(props) {
       }
       console.log(boardObj);
     }
+  }
+  useEffect(() => {
+    updateBoards();
   }, [boards]);
 
   const addUser = (userEmail, boardID) => {
@@ -88,8 +90,9 @@ export default function Dashboard(props) {
             await addUser(tempusers[i], res.data._id);
           }
           setShow(false);
-          setBoardObj(boardObj => [...boardObj, res.data]);
-          setBoards(boards => [...boards, res.data._id]);
+          await setBoards(boards => [...boards, res.data._id]);
+          // await setBoardObj(boardObj => [...boardObj, res.data]);
+          //await updateBoards();
           setUserstring("");
           setName("");
           console.log(res);
@@ -102,7 +105,8 @@ export default function Dashboard(props) {
       setMessage("Please enter a name.");
     }
   }
-  const blank = () => {setShow(true); setShow(false);};
+  const blank = async () => {await updateBoards()};
+
   return (
     <>
     <Navbar>
@@ -115,7 +119,7 @@ export default function Dashboard(props) {
     </Navbar.Collapse>
   </Navbar>
     <div>
-    {boardObj.length > 0  &&  boardObj.map(board => <Cardp key={board._id} name={board.name} users={board.users} board={board} blank={blank}/>)}
+    {boardObj.length > 0  &&  boardObj.map(board => <Cardp key={board._id} name={board.name} users={board.users} board={board} blank={blank} email={props.email}/>)}
     </div>
     <Modal
         show={show}

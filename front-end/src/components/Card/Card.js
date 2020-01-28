@@ -12,7 +12,8 @@ export default function Cardp(props) {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const {userID1, token1, boardObj1} = useContext(UserContext);
+  const {userID1, token1, boardObj1, boards1} = useContext(UserContext);
+  const [boards, setBoards] = boards1;
   const [boardObj, setBoardObj] = boardObj1; 
   const [userID, setuserID] = userID1;
   const [token, setToken] = token1;
@@ -53,7 +54,7 @@ const divClickHandler = async () => {
       console.log(email);
     }
   }
-  console.log(props.board.admins, admins);
+  console.log(props.board.admins, admins, props.board.users, users);
   setShow(true);
   setLoading(false);
 }
@@ -70,20 +71,37 @@ const deleteClickHandler = () => {
   const url = `http://localhost:8080/api/boards/${props.board._id}/delete`;
   console.log(url);
   fetch(url, options)
-  .then(res => {if(res.status === 200){
+  .then(async res => {if(res.status === 200){
     setShow(false);
-
-    var arr = boardObj;
     
-    console.log(boardObj);
-    var index = arr.findIndex(b => b._id == props.board._id);
+    var arr = boards;
+    const index = arr.indexOf(props.board._id);
     if(index > -1){
       arr.splice(index, 1);
-      setBoardObj(arr);
-      console.log(boardObj);
-      props.blank();
+      await setBoards(arr);
+      await props.blank();
     }
   }});
+}
+
+const deleteUserHandler = async (user) => {
+  const data = {user: user}
+  const options = {
+    method: 'DELETE',
+    headers: {
+      mode: 'cors',
+      'Content-Type': 'application/json',
+      'auth-token': token
+    },
+    body: JSON.stringify(data)
+  };
+  const url = `http://localhost:8080/api/boards/${props.board._id}/deleteUser`;
+  fetch(url, options)
+  .then(async res => {if(res.status === 200){
+    setShow(false);
+    await props.blank();
+  }
+console.log(res)});
 }
 
   return (
@@ -108,11 +126,11 @@ const deleteClickHandler = () => {
         <Modal.Body>
         Admins: 
           <div className="nameList">
-            {admins.map(admin => <li key={admin.toString()}> {admin} </li>)}
+  {admins.map(admin => <li key={admin.toString()}> {admin} { admin !== props.email && admins.indexOf(props.email) > -1 && <i className="fa fa-user-times removeUser"></i>} </li>)}
           </div>
           Users: 
           <div className="nameList">
-            {users.map(user => <li key={user.toString()}> { user } </li>)}
+  {users.map(user => <li key={user.toString()}> { user } {user != props.email && admins.indexOf(props.email) > -1 && <i className="fa fa-user-times removeUser" onClick={() => deleteUserHandler(user)}></i>}</li>)}
           </div>
         </Modal.Body>
       </Modal>
