@@ -28,7 +28,7 @@ export default function Dashboard(props) {
       for (var i = 0; i < boards.length; i++) {
         var url = `http://localhost:8080/api/boards/${boards[i]}`;
         console.log(url);
-        fetch(url)
+        await fetch(url)
           .then(res => res.json())
           .then(res => {
             if (res.data) {
@@ -43,8 +43,10 @@ export default function Dashboard(props) {
     updateBoards();
   }, [boards]);
 
-  const addUser = (userEmail, boardID) => {
+  const addUser = (userEmail, boardID, admin) => {
     const email = userEmail.replace(/\s/g, '');
+    var resp;
+    var url;
     console.log(userEmail);
     const options = {
       method: 'POST',
@@ -57,10 +59,12 @@ export default function Dashboard(props) {
         user: email
       })
     };
+    if(!admin){url = `http://localhost:8080/api/boards/${boardID}/addUser`}
+    if(admin){url = `http://localhost:8080/api/boards/${boardID}/addAdmin`}
 
-    fetch(`http://localhost:8080/api/boards/${boardID}/addUser`, options)
-      .then(res => console.log(res));
-    return;
+    fetch(url, options)
+      .then(res => {resp = res});
+    return resp;
   }
 
   const addSubmitHandler = async () => {
@@ -91,8 +95,6 @@ export default function Dashboard(props) {
           }
           setShow(false);
           await setBoards(boards => [...boards, res.data._id]);
-          // await setBoardObj(boardObj => [...boardObj, res.data]);
-          //await updateBoards();
           setUserstring("");
           setName("");
           console.log(res);
@@ -119,7 +121,7 @@ export default function Dashboard(props) {
     </Navbar.Collapse>
   </Navbar>
     <div>
-    {boardObj.length > 0  &&  boardObj.map(board => <Cardp key={board._id} name={board.name} users={board.users} board={board} blank={blank} email={props.email}/>)}
+    {boardObj.length > 0  &&  boardObj.map(board => <Cardp key={board._id} board={board} blank={blank} email={props.email} addUser={addUser}/>)}
     </div>
     <Modal
         show={show}

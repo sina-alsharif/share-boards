@@ -41,7 +41,7 @@ function userCheck(req, res, next){
         const requestID = jwt.verify(usertkn, process.env.TOKEN_SCRT)._id;
 
         if(data.users.indexOf(requestID) === -1 ){
-            return res.status(401).send("You are not an admin.");
+            return res.status(401).send("You are not a user.");
         } 
 
         next();

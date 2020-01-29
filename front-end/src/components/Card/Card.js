@@ -3,6 +3,8 @@ import React, {useState, useContext} from 'react';
 import Modal from 'react-bootstrap/Modal';
 import './Card.css';
 import Spinner from 'react-bootstrap/Spinner';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
 import { UserContext } from '../Login/UserContext';
 
 export default function Cardp(props) {
@@ -11,6 +13,10 @@ export default function Cardp(props) {
   const [admins, setAdmins] = useState([]);
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [type, setType] = useState("");
+  const [names, setNames] = useState("");
+  const [message, setMessage] = useState("");
 
   const {userID1, token1, boardObj1, boards1} = useContext(UserContext);
   const [boards, setBoards] = boards1;
@@ -84,8 +90,11 @@ const deleteClickHandler = () => {
   }});
 }
 
-const deleteUserHandler = async (user) => {
-  const data = {user: user}
+const deleteUserHandler = async (user, admin) => {
+  var url;
+  var data;
+  if(user) {url = `http://localhost:8080/api/boards/${props.board._id}/deleteUser`; data = {user: user};}
+  if(admin)  {url = `http://localhost:8080/api/boards/${props.board._id}/deleteAdmin`; data = {user: admin};}
   const options = {
     method: 'DELETE',
     headers: {
@@ -95,7 +104,6 @@ const deleteUserHandler = async (user) => {
     },
     body: JSON.stringify(data)
   };
-  const url = `http://localhost:8080/api/boards/${props.board._id}/deleteUser`;
   fetch(url, options)
   .then(async res => {if(res.status === 200){
     setShow(false);
@@ -104,36 +112,79 @@ const deleteUserHandler = async (user) => {
 console.log(res)});
 }
 
+const submitHandler = async () => {
+  
+  if(names)
+   var tempusers = names.split(', ');
+   if(type == "an admin"){
+      for(var i = 0; i < tempusers.length; i++){
+      await props.addUser(tempusers[i], props.board._id, true);
+      }
+   }
+   if(type == "a user"){
+    for(var i = 0; i < tempusers.length; i++){
+     await props.addUser(tempusers[i], props.board._id);
+    }
+ }
+  await props.blank();
+}
   return (
+    <>
     <div className="column">
          <div className="cardcustom" onClick={divClickHandler}>
-            <h1>{props.name}</h1>
+            <h1>{props.board.name}</h1>
            { loading && <Spinner className="spinner" animation="border" role="status">
               <span className="sr-only">Loading...</span>
   </Spinner> }
     </div>
     <Modal
+        size="lg"
         show={show}
         onHide={() => setShow(false)}
         aria-labelledby="modal"
       >
         <Modal.Header closeButton>
           <Modal.Title id="modal">
-            {props.name}
+            {props.board.name}
           </Modal.Title>
-          <a className="delbtn" onClick={deleteClickHandler}><i className="fa fa-trash"></i> Delete</a>
+  { admins.indexOf(props.email) > -1 && <a className="delbtn" onClick={deleteClickHandler}><i className="fa fa-trash"></i> Delete</a> }
         </Modal.Header>
         <Modal.Body>
-        Admins: 
+        Admins: {admins.indexOf(props.email) > -1 && <i className="fa fa-plus-square" onClick={() => {setShowAdd(true); setType("an admin");}}></i>}
           <div className="nameList">
-  {admins.map(admin => <li key={admin.toString()}> {admin} { admin !== props.email && admins.indexOf(props.email) > -1 && <i className="fa fa-user-times removeUser"></i>} </li>)}
+  {admins.map(admin => <li key={admin.toString()}> {admin} { admin !== props.email && admins.indexOf(props.email) > -1 && <i className="fa fa-user-times removeUser" onClick = {() => deleteUserHandler(null, admin)}></i>} </li>)}
           </div>
-          Users: 
+          Users: {admins.indexOf(props.email) > -1 && <i className="fa fa-plus-square" onClick={() => {setShowAdd(true); setType("a user");}}></i>}
           <div className="nameList">
   {users.map(user => <li key={user.toString()}> { user } {user != props.email && admins.indexOf(props.email) > -1 && <i className="fa fa-user-times removeUser" onClick={() => deleteUserHandler(user)}></i>}</li>)}
           </div>
         </Modal.Body>
       </Modal>
     </div>
+     <Modal
+     size="sm"
+     show={showAdd}
+     onHide={() => setShowAdd(false)}
+     aria-labelledby="modal">
+     
+     <Modal.Header closeButton>
+       <Modal.Title id="example-modal-sizes-title-sm">
+         Add {type}
+       </Modal.Title>
+     </Modal.Header>
+     <Modal.Body>
+     <Form.Group>
+            <Form.Label>Name</Form.Label>
+            <Form.Control type="input" value={names} onChange={(e) => setNames(e.target.value)} placeholder="Enter name" />
+            <Form.Text className="text-muted">
+            </Form.Text>
+          </Form.Group>
+          <Button variant="primary" onClick={submitHandler}>
+            Submit
+          </Button>
+          {message}
+     </Modal.Body>
+     </Modal>
+     </>
   );
 }

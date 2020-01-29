@@ -41,34 +41,34 @@ router.post('/create', verify.userVerif, (req, res) => {
 });
 
 //Delete Board
-router.delete('/:id/delete', verify.userVerif, verify.adminCheck, (req, res) => {
+router.delete('/:id/delete', verify.adminCheck, (req, res) => {
     Board.findById(req.params.id, (err, data) => {
-        if (err) return res.sendStatus(501).json({success: false, err: err});
+        if (err || !data) return res.sendStatus(501).json({success: false, err: err});
 
         for(var i = 0; i < data.users.length; i++){
             User.findById(data.users[i], (err, data) => {
-                if(err || !data) return res.send(501)
+                if(err || !data) return res.sendStatus(501)
         
                 const index = data.boards.indexOf(req.params.id);
                 if (index > -1){
                     data.boards.splice(index, 1);
                 }
                 data.save((err) => {
-                    if (err) return res.send(501).json(err)
+                    if (err) return res.sendStatus(501).json(err)
                 });
             });
         }
 
         for(var i = 0; i < data.admins.length; i++){
             User.findById(data.admins[i], (err, data) => {
-                if(err || !data) return res.send(501)
+                if(err || !data) return res.sendStatus(501)
         
                 const index = data.boards.indexOf(req.params.id);
                 if (index > -1){
                     data.boards.splice(index, 1);
                 }
                 data.save((err) => {
-                    if (err) return res.send(501).json(err)
+                    if (err) return res.sendStatus(501).json(err)
                 });
             });
         }
@@ -83,29 +83,32 @@ router.delete('/:id/delete', verify.userVerif, verify.adminCheck, (req, res) => 
 
 // Admin and User CRUD
 
-router.post('/:id/addUser', verify.userVerif, (req, res) => {
+router.post('/:id/addUser',  (req, res) => {
     if(req.body.user)
     var userID = "";
-   Board.findById(req.params.id, async (err, data) => {
-    if (err) return res.status(501);
-
-   await User.findOne({email: req.body.user}, (err, data) => {
+    User.findOne({email: req.body.user}, (err, data) => {
         if (err || !data) return res.status(501);
         
         userID = data._id;
         console.log(userID);
+    });
+   Board.findById(req.params.id, async (err, data) => {
+    if (err) return res.status(501);
+
+    if(!userID) return res.status(501).send("Failed.");
+   
+    if(data.users.indexOf(userID) > -1 || data.admins.indexOf(userID) > -1 ){
+        return res.status(400).json({err: 'This user already exists.'});
+    } 
+    
+    User.findById(userID, (err, data) => {
+        if (err || !data) return res.status(501);
 
         data.boards.push(req.params.id);
         data.save((err) => {
             if (err) return res.status(501)
         });
     });
-   
-    if(data.users.indexOf(userID) && data.admins.indexOf(userID) != -1 ){
-        return res.json('This user already exists.')
-    } 
-    if(!userID) return res.status(501).send("Failed.");
-    
 
     data.users.push(userID);
     res.json({data});
@@ -115,25 +118,32 @@ router.post('/:id/addUser', verify.userVerif, (req, res) => {
    });
 });
 
-router.post('/:id/addAdmin', (req, res) => {
+router.post('/:id/addAdmin', verify.adminCheck, async (req, res) => {
     var user = false;
+    var userID;
+    
+   await User.findOne({email: req.body.user}, (err, data) => {
+        if (err || !data) return res.status(501);
+        
+        userID = data._id;
+        console.log(userID);
+    
+    });
     Board.findById(req.params.id, (err, data) => {
      if (err) return res.status(501).json({success: false, err: err});
 
-     if(data.admins.indexOf(req.body.userID) != -1){
+     if(data.admins.indexOf(userID) != -1){
         return res.json('This admin already exists.')
     } 
 
-    var i;
-    for(i = 0; i < data.users.length; i++){
-        if(data.users[i] === req.body.userID){
-            data.users.splice(i, 1);
-            user = true;
-        }
+    var index = data.users.indexOf(userID);
+    if(index > -1){
+        data.users.splice(index, 1);
+        user = true;
     }
 
     if (!user) {
-    User.findById(req.body.userID, (err, data) => {
+    User.findById(userID, (err, data) => {
         if(err) return res.send(501)
         data.boards.push(req.params.id);
         data.save((err) => {
@@ -142,7 +152,7 @@ router.post('/:id/addAdmin', (req, res) => {
     });
 }
 
-     data.admins.push(req.body.userID);
+     data.admins.push(userID);
      res.json({data: data});
      data.save((err) => {
         if (err) return res.send(501).json(err)
@@ -150,7 +160,7 @@ router.post('/:id/addAdmin', (req, res) => {
     });
  });
 
-router.delete('/:id/deleteUser', verify.userVerif, verify.adminCheck, (req, res) => {
+router.delete('/:id/deleteUser', verify.adminCheck, (req, res) => {
     var userID;
     Board.findById(req.params.id, async (err, data) => {
         if (err) return res.send(502).json({
@@ -190,33 +200,48 @@ router.delete('/:id/deleteUser', verify.userVerif, verify.adminCheck, (req, res)
     });
 });
 
-router.delete('/:id/deleteAdmin', (req, res) => {
-    Board.findById(req.params.id, (err, data) => {
-        if (err) return res.send(501).json({success: false, err: err});
-        var user = req.body.userID;
-        var x;
-        for(x = 0; x < data.admins.length; x++){
-            if(data.admins[x] === user){
-                data.admins.splice(x, 1);
-            }
-        }
-        res.json({data});
-        data.save((err) => {
-            if (err) return res.send(501).json(err)
+router.delete('/:id/deleteAdmin', verify.adminCheck, (req, res) => {
+    var userID;
+    Board.findById(req.params.id, async (err, data) => {
+        if (err) return res.send(502).json({
+            success: false,
+            err: err
         });
-    });
-    User.findById(req.body.userID, (err, data) => {
-        if(err || !data) return res.send(501)
 
-        const index = data.boards.indexOf(req.params.id);
+        await User.findOne({email: req.body.user}, (err, data) => {
+            if (err || !data) return res.send(503).json({
+                success: false,
+                err: err
+            });
+
+            userID = data._id;
+            console.log(userID);
+
+
+            const index = data.boards.indexOf(req.params.id);
+            if (index > -1) {
+                data.boards.splice(index, 1);
+            }
+            data.save((err) => {
+                if (err) return res.send(501).json(err)
+            });
+        });
+
+        const index = data.admins.indexOf(userID);
         if (index > -1){
-            data.boards(index, 1);
+            data.admins.splice(index, 1);
         }
+        data.save((err) => {
+            if (err) return res.status(504).json(err)
+        });
+        res.json({
+            data
+        });
     });
 });
 
 //Update text
-router.post('/:id/updateText', (req, res) => {
+router.post('/:id/updateText', verify.userVerif, verify.adminCheck, (req, res) => {
     Board.findById(req.params.id, (err, data) => {
         if (err) return res.send(501).json({success: false, err: err});
 
