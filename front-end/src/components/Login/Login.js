@@ -12,13 +12,17 @@ import { UserContext } from './UserContext';
    const [message, setMessage] = useState("");
 
    const [logged, setLogged] = useContext(LoginContext);
-  
-    const {userID1, token1, boards1} = useContext(UserContext);
-    const [userID, setuserID] = userID1;
-    const [token, setToken] = token1;
-    const [boards, setBoards] = boards1;
 
-   const loginHandler = () => {
+   const {
+     userID1,
+     token1,
+     boards1
+   } = useContext(UserContext);
+   const [userID, setuserID] = userID1;
+   const [token, setToken] = token1;
+   const [boards, setBoards] = boards1;
+
+   const clickHandler = async (type) => {
      const data = {
        email: email,
        password: password
@@ -32,48 +36,35 @@ import { UserContext } from './UserContext';
        body: JSON.stringify(data)
      };
 
-     fetch('http://localhost:8080/api/users/login', options)
-       .then(res => res.json())
-       .then(res => {
-         if (res.status !== 200) {
-           setMessage(res.message)
-         } else {
-           setMessage("");
-           setLogged(true);
-           setuserID(res.userID);
-           setToken(res.token);
-           setBoards(res.boards);
-         }
-         console.log(res);
-       });
+     if (type) {
+       fetch('http://localhost:8080/api/users/login', options)
+         .then(res => res.json())
+         .then(res => {
+           if (res.status !== 200) {
+             setMessage(res.message)
+           } else {
+             setMessage("");
+             setLogged(true);
+             setuserID(res.userID);
+             setToken(res.token);
+             setBoards(res.boards);
+           }
+           console.log(res);
+         });
 
-     console.log(options);
+       console.log(options);
+     }
+     if (!type) {
+       await fetch('http://localhost:8080/api/users/register', options)
+         .then(res => res.json())
+         .then(res => {
+           setMessage("Account registered successfully, please login.");
+           if (res.err) {
+             setMessage(res.err);
+           }
+         });
+     }
    }
-
-   const registerHandler = async () => {
-     const data = {
-       email: email,
-       password: password
-     };
-     const options = {
-       method: 'POST',
-       headers: {
-         mode: 'cors',
-         'Content-Type': 'application/json',
-       },
-       body: JSON.stringify(data)
-     };
-
-
-     await fetch('http://localhost:8080/api/users/register', options)
-       .then(res => res.json())
-       .then(res => {
-         if (res.status !== 200) {
-           setMessage(res.err);
-         } else setMessage("Account registered successfully, please login.")
-       });
-   }
-
 
   return (
     <>
@@ -93,10 +84,10 @@ import { UserContext } from './UserContext';
     <Form.Label>Password</Form.Label>
     <Form.Control type="password" placeholder="Password" value={password} onChange={event => setPassword(event.target.value)}/>
   </Form.Group>
-  <Button className="btn" variant="primary" onClick={loginHandler} >
+  <Button className="btn" variant="primary" onClick={() => clickHandler(true)} >
     Login
   </Button>
-  <Button className="btn" variant="info" onClick={registerHandler} >
+  <Button className="btn" variant="info" onClick={() => clickHandler(false)} >
     Register
   </Button>
   <p className="message">{ message } logged is { logged.toString() } </p>
