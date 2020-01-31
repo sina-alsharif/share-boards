@@ -160,7 +160,7 @@ router.post('/:id/addAdmin', verify.adminCheck, async (req, res) => {
     });
  });
 
-router.delete('/:id/deleteUser', verify.adminCheck, (req, res) => {
+router.delete('/:id/deleteUser', verify.userCheck, (req, res) => {
     var userID;
     Board.findById(req.params.id, async (err, data) => {
         if (err) return res.send(502).json({

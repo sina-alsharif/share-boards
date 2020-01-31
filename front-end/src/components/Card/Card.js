@@ -128,6 +128,20 @@ const submitHandler = async () => {
  }
   await props.blank();
 }
+
+const leaveHandler = async (email) => {
+  if(admins.indexOf(email) > -1){
+    deleteUserHandler(null, email);
+  } else{
+    deleteUserHandler(email);
+  }
+  var index = boards.indexOf(props.board._id);
+  var arr = boards;
+  if(index > -1){
+      arr.splice(index, 1);
+  }
+  await setBoards(arr);
+}
   return (
     <>
     <div className="column">
@@ -147,6 +161,7 @@ const submitHandler = async () => {
           <Modal.Title id="modal">
             {props.board.name}
           </Modal.Title>
+          <a className="delbtn" onClick={() => leaveHandler(props.email)}><i className="fa fa-sign-out"></i></a>
   { admins.indexOf(props.email) > -1 && <a className="delbtn" onClick={deleteClickHandler}><i className="fa fa-trash"></i> Delete</a> }
         </Modal.Header>
         <Modal.Body>

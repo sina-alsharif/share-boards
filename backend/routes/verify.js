@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const Board = require('../models/Board');
+const User = require('../models/User');
 
 function auth(req, res, next) {
     const token = req.header('auth-token');
@@ -15,8 +16,8 @@ function auth(req, res, next) {
 }
 
 function adminVerif(req, res, next) {
-    Board.findById(req.params.id, (err, data) => {
-        if (err) return res.status(501)
+    Board.findById(req.params.id, async (err, data) => {
+        if (err || !data) return res.status(501)
 
         const usertkn = req.header('auth-token');
         if(!usertkn) return res.status(401).send('Forbidden');
@@ -33,14 +34,15 @@ function adminVerif(req, res, next) {
 
 function userCheck(req, res, next){
     Board.findById(req.params.id, (err, data) => {
-        if (err) return res.status(501)
+        if (err || !data) return res.status(501)
 
         const usertkn = req.header('auth-token');
         if(!usertkn) return res.status(401).send('Forbidden');
 
         const requestID = jwt.verify(usertkn, process.env.TOKEN_SCRT)._id;
 
-        if(data.users.indexOf(requestID) === -1 ){
+
+        if(data.users.indexOf(requestID) === -1 && data.admins.indexOf(requestID) === -1){
             return res.status(401).send("You are not a user.");
         } 
 
