@@ -7,15 +7,15 @@ After downloading the files and also ensuring you have Node Package Manager on t
 
 First run the front end by entering the folder
 
-'''
+```
 cd front-end
 npm start
-'''
+```
 Navigate out of the folder using 
-'''
+```
 cd ../
-'''
-'''
+```
+```
 cd backend
 nodemon main
-'''
+```
