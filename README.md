@@ -15,6 +15,7 @@ Navigate out of the folder using
 ```
 cd ../
 ```
+And run the backend using
 ```
 cd backend
 nodemon main
